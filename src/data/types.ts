@@ -79,6 +79,11 @@ export const SYMPTOM_KEYS = Object.keys(SYMPTOMS)
 export const TRIGGER_KEYS = Object.keys(TRIGGERS)
 
 export const LOCATIONS = [
-  'Vertex', 'Front', 'Tempe droite', 'Tempe gauche',
-  'Œil droit', 'Œil gauche', 'Occiput', 'Nuque', 'Crâne entier',
+  'Vertex gauche', 'Vertex droit',
+  'Front gauche', 'Front droit',
+  'Tempe gauche', 'Tempe droite',
+  'Œil gauche', 'Œil droit',
+  'Occiput gauche', 'Occiput droit',
+  'Nuque gauche', 'Nuque droite',
+  'Crâne entier',
 ]
