@@ -73,6 +73,8 @@ function RootPage({ onClose, onNav }: { onClose: () => void; onNav: (p: Page) =>
 function TraitementsPage({ onBack }: { onBack: () => void }) {
   const { T, A } = useTheme()
   const { schedules, saveSchedule, deleteSchedule } = useCrisis()
+  const { session } = useAuth()
+  const userId = session?.user?.id
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<TreatmentSchedule | null>(null)
 
@@ -90,19 +92,19 @@ function TraitementsPage({ onBack }: { onBack: () => void }) {
           {schedules.map((s, i) => (
             editing?.id === s.id ? (
               <ScheduleForm key={s.id} initial={s}
-                onSave={ns => { saveSchedule(ns); setEditing(null) }}
+                onSave={ns => { saveSchedule(ns, userId); setEditing(null) }}
                 onCancel={() => setEditing(null)} />
             ) : (
               <ScheduleRow key={s.id} schedule={s}
                 isLast={i === schedules.length - 1 && !adding}
-                onToggle={() => saveSchedule({ ...s, active: !s.active })}
+                onToggle={() => saveSchedule({ ...s, active: !s.active }, userId)}
                 onEdit={() => { setAdding(false); setEditing(s) }}
-                onDelete={() => deleteSchedule(s.id)} />
+                onDelete={() => deleteSchedule(s.id, userId)} />
             )
           ))}
           {adding && (
             <ScheduleForm
-              onSave={s => { saveSchedule(s); setAdding(false) }}
+              onSave={s => { saveSchedule(s, userId); setAdding(false) }}
               onCancel={() => setAdding(false)} />
           )}
         </Card>
@@ -349,6 +351,8 @@ function ComptePage({ onBack, onClose }: { onBack: () => void; onClose: () => vo
 
 function PersonnalisationPage({ onBack }: { onBack: () => void }) {
   const { customSymptoms, customTriggers, saveCustomSymptom, deleteCustomSymptom, saveCustomTrigger, deleteCustomTrigger } = useCrisis()
+  const { session } = useAuth()
+  const userId = session?.user?.id
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 40 }}>
@@ -357,15 +361,15 @@ function PersonnalisationPage({ onBack }: { onBack: () => void }) {
         title="Symptômes personnalisés"
         items={customSymptoms}
         prefix="custom_symptom"
-        onSave={saveCustomSymptom}
-        onDelete={deleteCustomSymptom}
+        onSave={item => saveCustomSymptom(item, userId)}
+        onDelete={key => deleteCustomSymptom(key, userId)}
       />
       <CustomItemSection
         title="Déclencheurs personnalisés"
         items={customTriggers}
         prefix="custom_trigger"
-        onSave={saveCustomTrigger}
-        onDelete={deleteCustomTrigger}
+        onSave={item => saveCustomTrigger(item, userId)}
+        onDelete={key => deleteCustomTrigger(key, userId)}
       />
     </div>
   )

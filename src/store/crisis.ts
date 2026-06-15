@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { MigraineCrisis, TreatmentSchedule, TreatmentLog } from '../data/types'
 import { SAMPLE_CRISES, SAMPLE_SCHEDULES, SAMPLE_LOGS } from '../data/sample'
-import { pullCrises, pushCrisis, deleteCrisisRemote } from '../data/sync'
+import { pullCrises, pushCrisis, deleteCrisisRemote, pullSchedules, pushSchedule, deleteScheduleRemote, pullUserLists, pushUserList } from '../data/sync'
 
 export interface CustomItem { key: string; label: string }
 
@@ -21,15 +21,15 @@ interface CrisisState {
   // Sync
   pullFromSupabase: (userId: string) => Promise<void>
   // Schedules
-  saveSchedule: (s: TreatmentSchedule) => void
-  deleteSchedule: (id: string) => void
+  saveSchedule: (s: TreatmentSchedule, userId?: string) => void
+  deleteSchedule: (id: string, userId?: string) => void
   // Logs
   markLog: (log: TreatmentLog) => void
   // Custom items
-  saveCustomSymptom: (item: CustomItem) => void
-  deleteCustomSymptom: (key: string) => void
-  saveCustomTrigger: (item: CustomItem) => void
-  deleteCustomTrigger: (key: string) => void
+  saveCustomSymptom: (item: CustomItem, userId?: string) => void
+  deleteCustomSymptom: (key: string, userId?: string) => void
+  saveCustomTrigger: (item: CustomItem, userId?: string) => void
+  deleteCustomTrigger: (key: string, userId?: string) => void
 }
 
 // Revive dates after persist (JSON serialization flattens Date → string)
@@ -68,38 +68,58 @@ export const useCrisis = create<CrisisState>()(
       setOngoing: (c) => set({ ongoing: c }),
 
       pullFromSupabase: async (userId) => {
-        const remote = await pullCrises(userId)
+        const [remote, remoteSchedules, userLists] = await Promise.all([
+          pullCrises(userId),
+          pullSchedules(userId),
+          pullUserLists(userId),
+        ])
         if (remote.length > 0) {
           set({ crises: remote, usingSampleData: false })
         } else {
-          // User has no remote data yet — clear sample data, start fresh
           set({ crises: [], usingSampleData: false })
         }
+        if (remoteSchedules.length > 0) set({ schedules: remoteSchedules })
+        if (userLists.symptoms.length > 0) set({ customSymptoms: userLists.symptoms })
+        if (userLists.triggers.length > 0) set({ customTriggers: userLists.triggers })
       },
 
-      saveSchedule: (s) => {
+      saveSchedule: (s, userId) => {
         const schedules = get().schedules.filter(x => x.id !== s.id)
         set({ schedules: [s, ...schedules] })
+        if (userId) pushSchedule(s, userId)
       },
 
-      deleteSchedule: (id) => set({ schedules: get().schedules.filter(s => s.id !== id) }),
+      deleteSchedule: (id, userId) => {
+        set({ schedules: get().schedules.filter(s => s.id !== id) })
+        if (userId) deleteScheduleRemote(id, userId)
+      },
 
       markLog: (log) => {
         const logs = get().logs.filter(l => !(l.scheduleId === log.scheduleId && l.date === log.date && l.time === log.time))
         set({ logs: [log, ...logs] })
       },
 
-      saveCustomSymptom: (item) => {
-        const list = get().customSymptoms.filter(x => x.key !== item.key)
-        set({ customSymptoms: [...list, item] })
+      saveCustomSymptom: (item, userId) => {
+        const list = [...get().customSymptoms.filter(x => x.key !== item.key), item]
+        set({ customSymptoms: list })
+        if (userId) pushUserList(userId, 'symptoms', list)
       },
-      deleteCustomSymptom: (key) => set({ customSymptoms: get().customSymptoms.filter(x => x.key !== key) }),
+      deleteCustomSymptom: (key, userId) => {
+        const list = get().customSymptoms.filter(x => x.key !== key)
+        set({ customSymptoms: list })
+        if (userId) pushUserList(userId, 'symptoms', list)
+      },
 
-      saveCustomTrigger: (item) => {
-        const list = get().customTriggers.filter(x => x.key !== item.key)
-        set({ customTriggers: [...list, item] })
+      saveCustomTrigger: (item, userId) => {
+        const list = [...get().customTriggers.filter(x => x.key !== item.key), item]
+        set({ customTriggers: list })
+        if (userId) pushUserList(userId, 'triggers', list)
       },
-      deleteCustomTrigger: (key) => set({ customTriggers: get().customTriggers.filter(x => x.key !== key) }),
+      deleteCustomTrigger: (key, userId) => {
+        const list = get().customTriggers.filter(x => x.key !== key)
+        set({ customTriggers: list })
+        if (userId) pushUserList(userId, 'triggers', list)
+      },
     }),
     {
       name: 'migratrack-crisis',
