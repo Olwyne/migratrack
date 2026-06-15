@@ -15,10 +15,9 @@ interface Props {
   onEndCrisis: () => void
   openCrisis: (c: MigraineCrisis) => void
   goStats: () => void
-  onSettings?: () => void
 }
 
-export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats, onSettings }: Props) {
+export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats }: Props) {
   const { T, A, dark } = useTheme()
   const { showSteps, showHydration } = usePrefs()
   const { crises, ongoing, logs, markLog, schedules } = useCrisis()
@@ -61,9 +60,7 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats, on
             <div style={{ fontSize: 11.5, color: T.onSurfaceVariant, marginTop: 3 }}>{capitalize(longDate(now))}</div>
           </div>
         </div>
-        <button onClick={onSettings} style={{ width: 40, height: 40, borderRadius: 20, border: 'none', background: T.cardTint, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="settings" size={20} color={T.onSurfaceVariant} stroke={1.9} />
-        </button>
+        <div style={{ width: 40 }} />
       </div>
 
       {/* Hero */}

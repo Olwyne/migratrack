@@ -16,8 +16,8 @@ import { MigraineCrisis } from './data/types'
 import { supabase } from './data/supabase'
 import { useTheme } from './hooks/useTheme'
 
-type Tab = 'home' | 'history' | 'stats' | 'report'
-type OverlayType = { type: 'detail'; crisis: MigraineCrisis; isNew: boolean } | { type: 'settings' }
+type Tab = 'home' | 'history' | 'stats'
+type OverlayType = { type: 'detail'; crisis: MigraineCrisis; isNew: boolean } | { type: 'settings' } | { type: 'report' }
 
 function newCrisis(): MigraineCrisis {
   const now = new Date()
@@ -100,11 +100,14 @@ function AppInner() {
   }
 
   return (
-    <AppShell tab={tab} onTabChange={t => { if (overlay?.type === 'settings') setStack([]); setTab(t as Tab) }} onFAB={startCrisis} showFAB={showFAB}>
-      {tab === 'home' && <HomeScreen onStartCrisis={startCrisis} onEndCrisis={endOngoing} openCrisis={openCrisis} goStats={() => setTab('stats')} onSettings={() => setStack(s => [...s, { type: 'settings' }])} />}
+    <AppShell tab={tab} onTabChange={t => {
+      if (t === 'settings') { setStack(s => [...s.filter(o => o.type !== 'settings'), { type: 'settings' }]); return }
+      if (overlay?.type === 'settings') setStack([])
+      setTab(t as Tab)
+    }} onFAB={startCrisis} showFAB={showFAB}>
+      {tab === 'home' && <HomeScreen onStartCrisis={startCrisis} onEndCrisis={endOngoing} openCrisis={openCrisis} goStats={() => setTab('stats')} />}
       {tab === 'history' && <HistoryScreen openCrisis={openCrisis} />}
-      {tab === 'stats' && <StatsScreen goReport={() => setTab('report')} />}
-      {tab === 'report' && <ReportScreen goBack={() => setTab('stats')} />}
+      {tab === 'stats' && <StatsScreen goReport={() => setStack(s => [...s, { type: 'report' }])} />}
 
       {overlay && (
         <div style={{
@@ -125,6 +128,9 @@ function AppInner() {
             )}
             {overlay.type === 'settings' && (
               <SettingsScreen onClose={closeTop} />
+            )}
+            {overlay.type === 'report' && (
+              <ReportScreen goBack={closeTop} />
             )}
           </div>
         </div>

@@ -7,7 +7,7 @@ const NAV = [
   { id: 'home', label: 'Accueil', icon: 'home' },
   { id: 'history', label: 'Historique', icon: 'calendar' },
   { id: 'stats', label: 'Stats', icon: 'chart' },
-  { id: 'report', label: 'Rapport', icon: 'report' },
+  { id: 'settings', label: 'Paramètres', icon: 'settings' },
 ]
 
 interface Props {
