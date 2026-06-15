@@ -156,7 +156,9 @@ function ScheduleForm({ initial, onSave, onCancel }: {
   const { T, A } = useTheme()
   const [name, setName] = useState(initial?.name ?? '')
   const [dose, setDose] = useState(initial?.dose ?? '')
-  const [timesStr, setTimesStr] = useState(initial?.times.join(', ') ?? '')
+  const [times, setTimes] = useState<string[]>(initial?.times ?? [])
+  const [adding, setAdding] = useState(false)
+  const [newTime, setNewTime] = useState('08:00')
 
   const inputStyle = {
     width: '100%', boxSizing: 'border-box' as const,
@@ -164,9 +166,17 @@ function ScheduleForm({ initial, onSave, onCancel }: {
     background: T.field, color: T.onSurface, fontFamily: 'inherit', fontSize: 14, outline: 'none',
   }
 
+  const addTime = () => {
+    if (newTime && !times.includes(newTime)) {
+      const sorted = [...times, newTime].sort()
+      setTimes(sorted)
+    }
+    setAdding(false)
+    setNewTime('08:00')
+  }
+
   const handleSave = () => {
     if (!name.trim()) return
-    const times = timesStr.split(',').map(t => t.trim()).filter(t => /^\d{2}:\d{2}$/.test(t))
     onSave({ id: initial?.id ?? `sch_${Date.now()}`, name: name.trim(), dose: dose.trim(), times, active: initial?.active ?? true })
   }
 
@@ -174,7 +184,26 @@ function ScheduleForm({ initial, onSave, onCancel }: {
     <div style={{ padding: '16px 18px', borderTop: `1px solid ${T.outline}`, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <input placeholder="Nom du médicament" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
       <input placeholder="Dose (ex: 50 mg)" value={dose} onChange={e => setDose(e.target.value)} style={inputStyle} />
-      <input placeholder="Horaires (ex: 08:00, 21:00)" value={timesStr} onChange={e => setTimesStr(e.target.value)} style={inputStyle} />
+      <div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: T.onSurfaceVariant, marginBottom: 8 }}>Horaires</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+          {times.map(t => (
+            <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 5, background: A + '18', borderRadius: 20, padding: '5px 10px 5px 12px' }}>
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: A }}>{t}</span>
+              <button onClick={() => setTimes(ts => ts.filter(x => x !== t))} style={{ width: 18, height: 18, borderRadius: 9, border: 'none', background: A + '30', color: A, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, fontSize: 12, fontWeight: 700 }}>×</button>
+            </div>
+          ))}
+          {adding ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)} autoFocus style={{ ...inputStyle, width: 'auto', padding: '6px 10px' }} />
+              <button onClick={addTime} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: A, color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700 }}>OK</button>
+              <button onClick={() => setAdding(false)} style={{ padding: '6px 10px', borderRadius: 8, border: `1px solid ${T.outline}`, background: 'transparent', color: T.onSurfaceVariant, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>✕</button>
+            </div>
+          ) : (
+            <button onClick={() => setAdding(true)} style={{ padding: '5px 12px', borderRadius: 20, border: `1.5px dashed ${T.outline}`, background: 'transparent', color: T.onSurfaceVariant, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>+ Ajouter</button>
+          )}
+        </div>
+      </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={onCancel} style={{ padding: '8px 16px', borderRadius: 10, border: `1.5px solid ${T.outline}`, background: 'transparent', color: T.onSurfaceVariant, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 650 }}>Annuler</button>
         <button onClick={handleSave} style={{ padding: '8px 16px', borderRadius: 10, border: 'none', background: A, color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700 }}>{initial ? 'Enregistrer' : 'Ajouter'}</button>
