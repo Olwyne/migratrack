@@ -57,7 +57,11 @@ function AppInner() {
   const openCrisis = (c: MigraineCrisis) => setStack(s => [...s, { type: 'detail', crisis: c, isNew: false }])
   const startCrisis = () => setStack(s => [...s, { type: 'detail', crisis: newCrisis(), isNew: true }])
   const closeTop = () => setStack(s => s.slice(0, -1))
-  const endOngoing = () => setOngoing(null)
+  const endOngoing = () => {
+    const ongoing = useCrisis.getState().ongoing
+    if (ongoing) saveCrisis({ ...ongoing, end: new Date() }, session?.user?.id)
+    setOngoing(null)
+  }
 
   const handleSaveCrisis = (c: MigraineCrisis, isNew: boolean) => {
     if (isNew && !c.end) setOngoing(c)

@@ -124,6 +124,7 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, o
           existingTreatments={treatments}
           onLogIntensity={handleLogIntensity}
           onLogTreatment={(name, eff) => handleAddTreatment(name, eff)}
+          onEnd={() => onSave({ ...buildCrisis(), end: new Date() })}
         />
       )}
 
@@ -244,13 +245,14 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, o
 }
 
 // ── Live tracker ─────────────────────────────────────────────
-function LiveTracker({ elapsed, currentIntensity, schedules, existingTreatments, onLogIntensity, onLogTreatment }: {
+function LiveTracker({ elapsed, currentIntensity, schedules, existingTreatments, onLogIntensity, onLogTreatment, onEnd }: {
   elapsed: number
   currentIntensity: number
   schedules: import('../data/types').TreatmentSchedule[]
   existingTreatments: TreatmentEntry[]
   onLogIntensity: (v: number) => void
   onLogTreatment: (name: string, eff: number) => void
+  onEnd: () => void
 }) {
   const { T, A } = useTheme()
   const [liveIntensity, setLiveIntensity] = useState(currentIntensity)
@@ -299,15 +301,26 @@ function LiveTracker({ elapsed, currentIntensity, schedules, existingTreatments,
       {/* Treatment log */}
       <div style={{ padding: '12px 18px' }}>
         {!showTreatment ? (
-          <button onClick={() => setShowTreatment(true)} style={{
-            width: '100%', padding: '9px', borderRadius: 12,
-            border: `1.5px dashed ${A}66`, background: 'transparent',
-            color: A, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-          }}>
-            <Icon name="pill" size={15} color={A} stroke={2.2} />
-            J'ai pris un traitement
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button onClick={() => setShowTreatment(true)} style={{
+              width: '100%', padding: '9px', borderRadius: 12,
+              border: `1.5px dashed ${A}66`, background: 'transparent',
+              color: A, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            }}>
+              <Icon name="pill" size={15} color={A} stroke={2.2} />
+              J'ai pris un traitement
+            </button>
+            <button onClick={onEnd} style={{
+              width: '100%', padding: '9px', borderRadius: 12,
+              border: 'none', background: '#4CAF5018',
+              color: '#4CAF50', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            }}>
+              <Icon name="check" size={15} color="#4CAF50" stroke={2.5} />
+              Terminer la crise maintenant
+            </button>
+          </div>
         ) : (
           <TreatmentPicker
             schedules={schedules}
