@@ -92,7 +92,7 @@ function AppInner() {
 
   return (
     <AppShell tab={tab} onTabChange={t => setTab(t as Tab)} onFAB={startCrisis} showFAB={showFAB}>
-      {tab === 'home' && <HomeScreen onStartCrisis={startCrisis} onEndCrisis={endOngoing} openCrisis={openCrisis} goStats={() => setTab('stats')} />}
+      {tab === 'home' && <HomeScreen onStartCrisis={startCrisis} onEndCrisis={endOngoing} openCrisis={openCrisis} goStats={() => setTab('stats')} onSettings={() => setStack(s => [...s, { type: 'settings' }])} />}
       {tab === 'history' && <HistoryScreen openCrisis={openCrisis} />}
       {tab === 'stats' && <StatsScreen goReport={() => setTab('report')} />}
       {tab === 'report' && <ReportScreen goBack={() => setTab('stats')} />}

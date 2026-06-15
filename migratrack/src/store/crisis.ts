@@ -4,12 +4,16 @@ import { MigraineCrisis, TreatmentSchedule, TreatmentLog } from '../data/types'
 import { SAMPLE_CRISES, SAMPLE_SCHEDULES, SAMPLE_LOGS } from '../data/sample'
 import { pullCrises, pushCrisis, deleteCrisisRemote } from '../data/sync'
 
+export interface CustomItem { key: string; label: string }
+
 interface CrisisState {
   crises: MigraineCrisis[]
   ongoing: MigraineCrisis | null
   schedules: TreatmentSchedule[]
   logs: TreatmentLog[]
   usingSampleData: boolean
+  customSymptoms: CustomItem[]
+  customTriggers: CustomItem[]
   // Crisis CRUD
   saveCrisis: (c: MigraineCrisis, userId?: string) => void
   deleteCrisis: (id: string, userId?: string) => void
@@ -21,6 +25,11 @@ interface CrisisState {
   deleteSchedule: (id: string) => void
   // Logs
   markLog: (log: TreatmentLog) => void
+  // Custom items
+  saveCustomSymptom: (item: CustomItem) => void
+  deleteCustomSymptom: (key: string) => void
+  saveCustomTrigger: (item: CustomItem) => void
+  deleteCustomTrigger: (key: string) => void
 }
 
 // Revive dates after persist (JSON serialization flattens Date → string)
@@ -42,6 +51,8 @@ export const useCrisis = create<CrisisState>()(
       schedules: SAMPLE_SCHEDULES,
       logs: SAMPLE_LOGS,
       usingSampleData: true,
+      customSymptoms: [],
+      customTriggers: [],
 
       saveCrisis: (c, userId) => {
         const crises = get().crises.filter(x => x.id !== c.id)
@@ -77,6 +88,18 @@ export const useCrisis = create<CrisisState>()(
         const logs = get().logs.filter(l => !(l.scheduleId === log.scheduleId && l.date === log.date && l.time === log.time))
         set({ logs: [log, ...logs] })
       },
+
+      saveCustomSymptom: (item) => {
+        const list = get().customSymptoms.filter(x => x.key !== item.key)
+        set({ customSymptoms: [...list, item] })
+      },
+      deleteCustomSymptom: (key) => set({ customSymptoms: get().customSymptoms.filter(x => x.key !== key) }),
+
+      saveCustomTrigger: (item) => {
+        const list = get().customTriggers.filter(x => x.key !== item.key)
+        set({ customTriggers: [...list, item] })
+      },
+      deleteCustomTrigger: (key) => set({ customTriggers: get().customTriggers.filter(x => x.key !== key) }),
     }),
     {
       name: 'migratrack-crisis',

@@ -14,9 +14,10 @@ interface Props {
   onEndCrisis: () => void
   openCrisis: (c: MigraineCrisis) => void
   goStats: () => void
+  onSettings?: () => void
 }
 
-export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats }: Props) {
+export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats, onSettings }: Props) {
   const { T, A, dark } = useTheme()
   const { crises, ongoing, logs, markLog, schedules } = useCrisis()
   const now = new Date()
@@ -58,8 +59,8 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats }: 
             <div style={{ fontSize: 11.5, color: T.onSurfaceVariant, marginTop: 3 }}>{capitalize(longDate(now))}</div>
           </div>
         </div>
-        <button onClick={goStats} style={{ width: 40, height: 40, borderRadius: 20, border: 'none', background: T.cardTint, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="bell" size={20} color={T.onSurfaceVariant} stroke={1.9} />
+        <button onClick={onSettings} style={{ width: 40, height: 40, borderRadius: 20, border: 'none', background: T.cardTint, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="settings" size={20} color={T.onSurfaceVariant} stroke={1.9} />
         </button>
       </div>
 

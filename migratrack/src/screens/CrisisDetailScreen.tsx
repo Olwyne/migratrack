@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useTheme } from '../hooks/useTheme'
-import { MigraineCrisis, SYMPTOM_KEYS, TRIGGER_KEYS, SYMPTOMS, TRIGGERS, LOCATIONS } from '../data/types'
+import { MigraineCrisis, TreatmentEntry, SYMPTOM_KEYS, TRIGGER_KEYS, SYMPTOMS, TRIGGERS, LOCATIONS } from '../data/types'
+import { useCrisis } from '../store/crisis'
 import { Card } from '../components/ui/Card'
 import { Icon } from '../components/ui/Icon'
 import { PrimaryButton, IconButton } from '../components/ui/Buttons'
@@ -20,20 +21,36 @@ interface Props {
 
 export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }: Props) {
   const { T, A, dark } = useTheme()
+  const { customSymptoms, customTriggers, schedules } = useCrisis()
+
   const [intensity, setIntensity] = useState(crisis.intensity || 5)
   const [location, setLocation] = useState<string | null>(crisis.location)
   const [symptoms, setSymptoms] = useState<string[]>(crisis.symptoms)
   const [triggers, setTriggers] = useState<string[]>(crisis.triggers)
+  const [treatments, setTreatments] = useState<TreatmentEntry[]>(crisis.treatments)
   const [notes, setNotes] = useState(crisis.notes)
+  const [addingTreatment, setAddingTreatment] = useState(false)
+
+  const allSymptoms = { ...SYMPTOMS, ...Object.fromEntries(customSymptoms.map(x => [x.key, x.label])) }
+  const allSymptomKeys = [...SYMPTOM_KEYS, ...customSymptoms.map(x => x.key)]
+  const allTriggers = { ...TRIGGERS, ...Object.fromEntries(customTriggers.map(x => [x.key, x.label])) }
+  const allTriggerKeys = [...TRIGGER_KEYS, ...customTriggers.map(x => x.key)]
 
   const toggle = (arr: string[], set: (v: string[]) => void, key: string) =>
     set(arr.includes(key) ? arr.filter(x => x !== key) : [...arr, key])
 
+  const removeTreatment = (i: number) => setTreatments(ts => ts.filter((_, j) => j !== i))
+  const setTreatmentEff = (i: number, eff: number) =>
+    setTreatments(ts => ts.map((t, j) => j === i ? { ...t, eff } : t))
+
   const dur = crisis.end ? Math.round((crisis.end.getTime() - crisis.start.getTime()) / 60000) : null
   const c = intensityColor(intensity)
 
-  const handleSave = () => {
-    onSave({ ...crisis, intensity, location, symptoms, triggers, notes })
+  const handleSave = () => onSave({ ...crisis, intensity, location, symptoms, triggers, treatments, notes })
+
+  const handleAddTreatment = (name: string, eff: number) => {
+    setTreatments(ts => [...ts, { name, eff, takenAt: new Date() }])
+    setAddingTreatment(false)
   }
 
   return (
@@ -102,7 +119,10 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }:
       <Card pad={18} style={{ marginBottom: 16 }}>
         <Eyebrow style={{ marginBottom: 13 }}>Symptômes</Eyebrow>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {SYMPTOM_KEYS.map(k => <Chip key={k} label={SYMPTOMS[k]} selected={symptoms.includes(k)} onClick={() => toggle(symptoms, setSymptoms, k)} />)}
+          {allSymptomKeys.map(k => (
+            <Chip key={k} label={allSymptoms[k]} selected={symptoms.includes(k)}
+              onClick={() => toggle(symptoms, setSymptoms, k)} />
+          ))}
         </div>
       </Card>
 
@@ -110,35 +130,58 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }:
       <Card pad={18} style={{ marginBottom: 16 }}>
         <Eyebrow style={{ marginBottom: 13 }}>Déclencheurs possibles</Eyebrow>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {TRIGGER_KEYS.map(k => <Chip key={k} label={TRIGGERS[k]} selected={triggers.includes(k)} onClick={() => toggle(triggers, setTriggers, k)} />)}
+          {allTriggerKeys.map(k => (
+            <Chip key={k} label={allTriggers[k]} selected={triggers.includes(k)}
+              onClick={() => toggle(triggers, setTriggers, k)} />
+          ))}
         </div>
       </Card>
 
       {/* Treatments */}
       <Card pad={18} style={{ marginBottom: 16 }}>
-        <Eyebrow style={{ marginBottom: 13 }}>Traitements pris</Eyebrow>
-        {crisis.treatments && crisis.treatments.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {crisis.treatments.map((t, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, background: A + (dark ? '24' : '14'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon name="pill" size={18} color={A} stroke={2.1} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
+          <Eyebrow>Traitements pris</Eyebrow>
+          {!addingTreatment && (
+            <button onClick={() => setAddingTreatment(true)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'transparent', border: `1.5px solid ${A}55`, borderRadius: 8, padding: '4px 10px', cursor: 'pointer', color: A, fontSize: 12.5, fontWeight: 700, fontFamily: 'inherit' }}>
+              <Icon name="plus" size={13} color={A} stroke={2.5} />Ajouter
+            </button>
+          )}
+        </div>
+
+        {treatments.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: addingTreatment ? 14 : 0 }}>
+            {treatments.map((t, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: A + (dark ? '24' : '14'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon name="pill" size={17} color={A} stroke={2.1} />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 650, color: T.onSurface }}>{t.name}</div>
-                  <div style={{ fontSize: 12, color: T.onSurfaceVariant }}>{t.takenAt ? `Pris à ${hhmm(t.takenAt)}` : ''}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ display: 'flex', gap: 2.5, marginBottom: 2 }}>
-                    {[1,2,3,4,5].map(s => <span key={s} style={{ width: 8, height: 8, borderRadius: 8, background: s <= t.eff ? A : T.outline }} />)}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 650, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
+                  <div style={{ display: 'flex', gap: 3, marginTop: 4 }}>
+                    {[1,2,3,4,5].map(s => (
+                      <button key={s} onClick={() => setTreatmentEff(i, s)} style={{ width: 18, height: 18, borderRadius: 18, border: 'none', cursor: 'pointer', padding: 0, background: s <= t.eff ? A : T.outline }} />
+                    ))}
                   </div>
-                  <div style={{ fontSize: 10.5, color: T.onSurfaceVariant }}>efficacité</div>
                 </div>
+                <button onClick={() => removeTreatment(i)} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: '#E5737318', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon name="close" size={14} color="#E57373" stroke={2.5} />
+                </button>
               </div>
             ))}
           </div>
-        ) : (
-          <div style={{ fontSize: 13, color: T.onSurfaceVariant }}>Aucun traitement enregistré</div>
+        )}
+
+        {treatments.length === 0 && !addingTreatment && (
+          <div style={{ fontSize: 13, color: T.onSurfaceVariant, marginBottom: 0 }}>Aucun traitement enregistré</div>
+        )}
+
+        {addingTreatment && (
+          <TreatmentPicker
+            schedules={schedules}
+            existing={treatments.map(t => t.name)}
+            onAdd={handleAddTreatment}
+            onCancel={() => setAddingTreatment(false)}
+          />
         )}
       </Card>
 
@@ -158,6 +201,61 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }:
       <PrimaryButton icon="check" onClick={handleSave} style={{ marginBottom: 8 }}>
         {isNew ? 'Enregistrer la crise' : 'Enregistrer les modifications'}
       </PrimaryButton>
+    </div>
+  )
+}
+
+// ── Treatment picker ──────────────────────────────────────────
+function TreatmentPicker({ schedules, existing, onAdd, onCancel }: {
+  schedules: import('../data/types').TreatmentSchedule[]
+  existing: string[]
+  onAdd: (name: string, eff: number) => void
+  onCancel: () => void
+}) {
+  const { T, A } = useTheme()
+  const [name, setName] = useState('')
+  const [eff, setEff] = useState(3)
+
+  const suggestions = schedules
+    .filter(s => s.active && !existing.includes(s.name))
+    .map(s => s.name)
+
+  const inputStyle = {
+    width: '100%', boxSizing: 'border-box' as const,
+    padding: '9px 12px', borderRadius: 10, border: `1.5px solid ${T.fieldBorder}`,
+    background: T.field, color: T.onSurface, fontFamily: 'inherit', fontSize: 14, outline: 'none',
+  }
+
+  return (
+    <div style={{ borderTop: `1px solid ${T.outline}`, paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {suggestions.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+          {suggestions.map(s => (
+            <button key={s} onClick={() => setName(s)} style={{
+              padding: '5px 12px', borderRadius: 20, border: `1.5px solid ${name === s ? A : T.outline}`,
+              background: name === s ? A + '18' : 'transparent', color: name === s ? A : T.onSurfaceVariant,
+              cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 650,
+            }}>{s}</button>
+          ))}
+        </div>
+      )}
+      <input placeholder="Nom du médicament" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+      <div>
+        <div style={{ fontSize: 12, color: T.onSurfaceVariant, marginBottom: 6, fontWeight: 600 }}>Efficacité</div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[1,2,3,4,5].map(s => (
+            <button key={s} onClick={() => setEff(s)} style={{
+              width: 32, height: 32, borderRadius: 8, border: 'none', cursor: 'pointer',
+              background: s <= eff ? A : T.cardTint, color: s <= eff ? '#fff' : T.onSurfaceVariant,
+              fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+            }}>{s}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <button onClick={onCancel} style={{ padding: '8px 16px', borderRadius: 10, border: `1.5px solid ${T.outline}`, background: 'transparent', color: T.onSurfaceVariant, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 650 }}>Annuler</button>
+        <button onClick={() => name.trim() && onAdd(name.trim(), eff)} disabled={!name.trim()} style={{ padding: '8px 16px', borderRadius: 10, border: 'none', background: name.trim() ? A : T.outline, color: '#fff', cursor: name.trim() ? 'pointer' : 'default', fontFamily: 'inherit', fontSize: 13, fontWeight: 700 }}>Ajouter</button>
+      </div>
     </div>
   )
 }
