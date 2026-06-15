@@ -66,6 +66,11 @@ function AppInner() {
     closeTop()
   }
 
+  const handleUpdateCrisis = (c: MigraineCrisis) => {
+    if (!c.end) setOngoing(c)
+    saveCrisis(c, session?.user?.id)
+  }
+
   const handleDeleteCrisis = (id: string) => {
     deleteCrisis(id, session?.user?.id)
     closeTop()
@@ -110,6 +115,7 @@ function AppInner() {
                 isNew={overlay.isNew}
                 onClose={closeTop}
                 onSave={(c) => handleSaveCrisis(c, overlay.isNew)}
+                onUpdate={handleUpdateCrisis}
                 onDelete={!overlay.isNew ? handleDeleteCrisis : undefined}
               />
             )}

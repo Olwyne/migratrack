@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTheme } from '../hooks/useTheme'
 import { MigraineCrisis, TreatmentEntry, SYMPTOM_KEYS, TRIGGER_KEYS, SYMPTOMS, TRIGGERS, LOCATIONS } from '../data/types'
 import { useCrisis } from '../store/crisis'
@@ -16,10 +16,11 @@ interface Props {
   isNew: boolean
   onClose: () => void
   onSave: (c: MigraineCrisis) => void
+  onUpdate?: (c: MigraineCrisis) => void
   onDelete?: (id: string) => void
 }
 
-export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }: Props) {
+export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, onDelete }: Props) {
   const { T, A, dark } = useTheme()
   const { customSymptoms, customTriggers, schedules } = useCrisis()
 
@@ -28,8 +29,21 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }:
   const [symptoms, setSymptoms] = useState<string[]>(crisis.symptoms)
   const [triggers, setTriggers] = useState<string[]>(crisis.triggers)
   const [treatments, setTreatments] = useState<TreatmentEntry[]>(crisis.treatments)
+  const [intensityHistory, setIntensityHistory] = useState(crisis.intensityHistory)
   const [notes, setNotes] = useState(crisis.notes)
   const [addingTreatment, setAddingTreatment] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+
+  const isOngoing = !crisis.end
+
+  // Tick elapsed time for ongoing crisis
+  useEffect(() => {
+    if (!isOngoing) return
+    const tick = () => setElapsed(Math.round((Date.now() - crisis.start.getTime()) / 60000))
+    tick()
+    const id = setInterval(tick, 30000)
+    return () => clearInterval(id)
+  }, [isOngoing, crisis.start])
 
   const allSymptoms = { ...SYMPTOMS, ...Object.fromEntries(customSymptoms.map(x => [x.key, x.label])) }
   const allSymptomKeys = [...SYMPTOM_KEYS, ...customSymptoms.map(x => x.key)]
@@ -46,11 +60,23 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }:
   const dur = crisis.end ? Math.round((crisis.end.getTime() - crisis.start.getTime()) / 60000) : null
   const c = intensityColor(intensity)
 
-  const handleSave = () => onSave({ ...crisis, intensity, location, symptoms, triggers, treatments, notes })
+  const buildCrisis = () => ({ ...crisis, intensity, location, symptoms, triggers, treatments, intensityHistory, notes })
+
+  const handleSave = () => onSave(buildCrisis())
 
   const handleAddTreatment = (name: string, eff: number) => {
-    setTreatments(ts => [...ts, { name, eff, takenAt: new Date() }])
+    const updated = [...treatments, { name, eff, takenAt: new Date() }]
+    setTreatments(updated)
     setAddingTreatment(false)
+    if (isOngoing && onUpdate) onUpdate({ ...buildCrisis(), treatments: updated })
+  }
+
+  const handleLogIntensity = (v: number) => {
+    const entry = { t: new Date(), v }
+    const updated = [...intensityHistory, entry]
+    setIntensityHistory(updated)
+    setIntensity(v)
+    if (onUpdate) onUpdate({ ...buildCrisis(), intensity: v, intensityHistory: updated })
   }
 
   return (
@@ -89,6 +115,18 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }:
         )}
       </Card>
 
+      {/* Live tracker — only for ongoing crisis */}
+      {isOngoing && (
+        <LiveTracker
+          elapsed={elapsed}
+          currentIntensity={intensity}
+          schedules={schedules}
+          existingTreatments={treatments}
+          onLogIntensity={handleLogIntensity}
+          onLogTreatment={(name, eff) => handleAddTreatment(name, eff)}
+        />
+      )}
+
       {/* Intensity */}
       <Card pad={18} style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -99,10 +137,10 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }:
           </div>
         </div>
         <IntensitySlider value={intensity} onChange={setIntensity} />
-        {crisis.intensityHistory && crisis.intensityHistory.length > 1 && (
+        {intensityHistory && intensityHistory.length > 1 && (
           <div style={{ marginTop: 18 }}>
             <Eyebrow style={{ marginBottom: 6 }}>Évolution</Eyebrow>
-            <IntensityLine history={crisis.intensityHistory} treatments={crisis.treatments} start={crisis.start} end={crisis.end} height={170} />
+            <IntensityLine history={intensityHistory} treatments={treatments} start={crisis.start} end={crisis.end} height={170} />
           </div>
         )}
       </Card>
@@ -201,6 +239,84 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onDelete }:
       <PrimaryButton icon="check" onClick={handleSave} style={{ marginBottom: 8 }}>
         {isNew ? 'Enregistrer la crise' : 'Enregistrer les modifications'}
       </PrimaryButton>
+    </div>
+  )
+}
+
+// ── Live tracker ─────────────────────────────────────────────
+function LiveTracker({ elapsed, currentIntensity, schedules, existingTreatments, onLogIntensity, onLogTreatment }: {
+  elapsed: number
+  currentIntensity: number
+  schedules: import('../data/types').TreatmentSchedule[]
+  existingTreatments: TreatmentEntry[]
+  onLogIntensity: (v: number) => void
+  onLogTreatment: (name: string, eff: number) => void
+}) {
+  const { T, A } = useTheme()
+  const [liveIntensity, setLiveIntensity] = useState(currentIntensity)
+  const [showTreatment, setShowTreatment] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const handleLog = () => {
+    onLogIntensity(liveIntensity)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 1800)
+  }
+
+  const now = new Date()
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+
+  return (
+    <div style={{ marginBottom: 16, border: `2px solid ${A}`, borderRadius: 16, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ background: A + '18', padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ position: 'relative', width: 9, height: 9, flexShrink: 0 }}>
+          <span style={{ position: 'absolute', inset: 0, borderRadius: 9, background: A, animation: 'pulseDot 1.6s ease-out infinite' }} />
+          <span style={{ position: 'absolute', inset: 0, borderRadius: 9, background: A }} />
+        </span>
+        <span style={{ fontWeight: 800, fontSize: 14, color: A }}>Suivi en direct</span>
+        <span style={{ marginLeft: 'auto', fontSize: 13, color: T.onSurfaceVariant, fontWeight: 600 }}>depuis {fmtDur(elapsed)}</span>
+      </div>
+
+      {/* Intensity log */}
+      <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.outline}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: T.onSurface }}>Intensité à {timeStr}</span>
+          <span style={{ fontSize: 22, fontWeight: 820, color: intensityColor(liveIntensity) }}>{liveIntensity}<span style={{ fontSize: 13, color: T.onSurfaceVariant, fontWeight: 600 }}>/10</span></span>
+        </div>
+        <IntensitySlider value={liveIntensity} onChange={setLiveIntensity} />
+        <button onClick={handleLog} style={{
+          marginTop: 12, width: '100%', padding: '10px', borderRadius: 12, border: 'none',
+          background: saved ? '#4CAF50' : A, color: '#fff', fontFamily: 'inherit',
+          fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'background .3s',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+        }}>
+          <Icon name={saved ? 'check' : 'plus'} size={16} color="#fff" stroke={2.5} />
+          {saved ? 'Mesure enregistrée !' : 'Enregistrer cette mesure'}
+        </button>
+      </div>
+
+      {/* Treatment log */}
+      <div style={{ padding: '12px 18px' }}>
+        {!showTreatment ? (
+          <button onClick={() => setShowTreatment(true)} style={{
+            width: '100%', padding: '9px', borderRadius: 12,
+            border: `1.5px dashed ${A}66`, background: 'transparent',
+            color: A, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+          }}>
+            <Icon name="pill" size={15} color={A} stroke={2.2} />
+            J'ai pris un traitement
+          </button>
+        ) : (
+          <TreatmentPicker
+            schedules={schedules}
+            existing={existingTreatments.map(t => t.name)}
+            onAdd={(name, eff) => { onLogTreatment(name, eff); setShowTreatment(false) }}
+            onCancel={() => setShowTreatment(false)}
+          />
+        )}
+      </div>
     </div>
   )
 }
