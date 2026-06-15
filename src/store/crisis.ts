@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { MigraineCrisis, TreatmentSchedule, TreatmentLog } from '../data/types'
 import { SAMPLE_CRISES, SAMPLE_SCHEDULES, SAMPLE_LOGS } from '../data/sample'
-import { pullCrises, pushCrisis, deleteCrisisRemote, pullSchedules, pushSchedule, deleteScheduleRemote, pullUserLists, pushUserList } from '../data/sync'
+import { pullCrises, pushCrisis, deleteCrisisRemote, pullSchedules, pushSchedule, deleteScheduleRemote, pullUserLists, pushUserList, pullLogs, pushLog } from '../data/sync'
 
 export interface CustomItem { key: string; label: string }
 
@@ -24,7 +24,7 @@ interface CrisisState {
   saveSchedule: (s: TreatmentSchedule, userId?: string) => void
   deleteSchedule: (id: string, userId?: string) => void
   // Logs
-  markLog: (log: TreatmentLog) => void
+  markLog: (log: TreatmentLog, userId?: string) => void
   // Custom items
   saveCustomSymptom: (item: CustomItem, userId?: string) => void
   deleteCustomSymptom: (key: string, userId?: string) => void
@@ -68,16 +68,18 @@ export const useCrisis = create<CrisisState>()(
       setOngoing: (c) => set({ ongoing: c }),
 
       pullFromSupabase: async (userId) => {
-        const [remote, remoteSchedules, userLists] = await Promise.all([
+        const [remote, remoteSchedules, userLists, remoteLogs] = await Promise.all([
           pullCrises(userId),
           pullSchedules(userId),
           pullUserLists(userId),
+          pullLogs(userId),
         ])
         // Supabase is source of truth when connected — always replace local state
         set({
           crises: remote,
           usingSampleData: false,
           schedules: remoteSchedules,
+          logs: remoteLogs,
           customSymptoms: userLists.symptoms,
           customTriggers: userLists.triggers,
         })
@@ -94,9 +96,10 @@ export const useCrisis = create<CrisisState>()(
         if (userId) deleteScheduleRemote(id, userId)
       },
 
-      markLog: (log) => {
+      markLog: (log, userId) => {
         const logs = get().logs.filter(l => !(l.scheduleId === log.scheduleId && l.date === log.date && l.time === log.time))
         set({ logs: [log, ...logs] })
+        if (userId) pushLog(log, userId)
       },
 
       saveCustomSymptom: (item, userId) => {

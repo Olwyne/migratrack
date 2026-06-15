@@ -47,6 +47,25 @@ export async function pushUserList(userId: string, listType: 'symptoms' | 'trigg
   })
 }
 
+// ── Treatment logs ────────────────────────────────────────────────────────────
+
+export async function pullLogs(userId: string): Promise<import('./types').TreatmentLog[]> {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('treatment_logs')
+    .select('id, data')
+    .eq('user_id', userId)
+  if (error || !data) return []
+  return data.map(row => ({ ...(row.data as object), id: row.id }) as import('./types').TreatmentLog)
+}
+
+export async function pushLog(log: import('./types').TreatmentLog, userId: string): Promise<void> {
+  if (!supabase) return
+  await supabase.from('treatment_logs').upsert({
+    id: log.id, user_id: userId, data: log, updated_at: new Date().toISOString(),
+  })
+}
+
 function serializeCrisis(c: MigraineCrisis) {
   return {
     ...c,

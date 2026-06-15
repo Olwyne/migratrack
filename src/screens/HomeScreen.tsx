@@ -1,6 +1,7 @@
 import { useTheme } from '../hooks/useTheme'
 import { usePrefs } from '../store/prefs'
 import { useCrisis } from '../store/crisis'
+import { useAuth } from '../store/auth'
 import { MigraineCrisis, TreatmentLog, TRIGGERS } from '../data/types'
 import { computeStats } from '../data/stats'
 import { SAMPLE_GOALS, SAMPLE_STREAK } from '../data/sample'
@@ -21,6 +22,8 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats }: 
   const { T, A, dark } = useTheme()
   const { showSteps, showHydration } = usePrefs()
   const { crises, ongoing, logs, markLog, schedules } = useCrisis()
+  const { session } = useAuth()
+  const userId = session?.user?.id
   const now = new Date()
   const stats = computeStats(crises, now)
   const recent = crises.filter(c => c.end).slice(0, 4)
@@ -40,11 +43,11 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats }: 
     const h = now.getHours().toString().padStart(2,'0')
     const m = now.getMinutes().toString().padStart(2,'0')
     const log: TreatmentLog = { id: `${scheduleId}-${todayStr}-${time}`, scheduleId, date: todayStr, time, taken: true, takenAt: `${h}:${m}` }
-    markLog(log)
+    markLog(log, userId)
   }
   const handleSkip = (scheduleId: string, time: string) => {
     const log: TreatmentLog = { id: `${scheduleId}-${todayStr}-${time}`, scheduleId, date: todayStr, time, taken: false, takenAt: null }
-    markLog(log)
+    markLog(log, userId)
   }
 
   return (
