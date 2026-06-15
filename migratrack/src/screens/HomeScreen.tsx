@@ -23,7 +23,7 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats, on
   const now = new Date()
   const stats = computeStats(crises, now)
   const recent = crises.filter(c => c.end).slice(0, 4)
-  const weekTop = stats.triggers[0] ? TRIGGERS[stats.triggers[0].key] : null
+  const monthTop = stats.triggers[0] ? TRIGGERS[stats.triggers[0].key] : null
 
   // Today's treatments (from schedules + logs)
   const todayStr = now.toISOString().slice(0, 10)
@@ -103,11 +103,11 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats, on
         <Card pad={16}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <Icon name="calendar" size={17} color={A} stroke={2} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, letterSpacing: 0.2 }}>CETTE SEMAINE</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, letterSpacing: 0.2 }}>CE MOIS</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            <span style={{ fontSize: 34, fontWeight: 820, color: T.onSurface, lineHeight: 1 }}>{stats.thisWeek}</span>
-            <span style={{ fontSize: 14, color: T.onSurfaceVariant, fontWeight: 600 }}>crise{stats.thisWeek !== 1 ? 's' : ''}</span>
+            <span style={{ fontSize: 34, fontWeight: 820, color: T.onSurface, lineHeight: 1 }}>{stats.thisMonth}</span>
+            <span style={{ fontSize: 14, color: T.onSurfaceVariant, fontWeight: 600 }}>crise{stats.thisMonth !== 1 ? 's' : ''}</span>
           </div>
           <div style={{ fontSize: 11.5, color: T.onSurfaceVariant, marginTop: 6 }}>Intensité moy. {stats.avgInt ? stats.avgInt.toFixed(1) : '—'}/10</div>
         </Card>
@@ -115,13 +115,13 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats, on
 
       {/* Weekly summary */}
       <Card style={{ marginTop: 12 }} pad={16}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, letterSpacing: 0.2, marginBottom: 10 }}>RÉSUMÉ DE LA SEMAINE</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, letterSpacing: 0.2, marginBottom: 10 }}>RÉSUMÉ DU MOIS</div>
         <div style={{ display: 'flex', gap: 18 }}>
-          <SummaryStat value={`${stats.thisWeek}`} label="crises" />
+          <SummaryStat value={`${stats.thisMonth}`} label="crises" />
           <Divider />
           <SummaryStat value={fmtDur(stats.avgDur)} label="durée moy." />
           <Divider />
-          <SummaryStat value={weekTop || '—'} label="déclencheur" />
+          <SummaryStat value={monthTop || '—'} label="déclencheur" />
         </div>
       </Card>
 
