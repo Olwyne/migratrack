@@ -23,7 +23,7 @@ interface Props {
 
 export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, onDelete }: Props) {
   const { T, A, dark } = useTheme()
-  const { customSymptoms, customTriggers, schedules } = useCrisis()
+  const { customSymptoms, customTriggers, schedules, saveCustomSymptom, saveCustomTrigger } = useCrisis()
 
   const [intensity, setIntensity] = useState(crisis.intensity || 5)
   const [locations, setLocations] = useState<string[]>(
@@ -35,6 +35,10 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, o
   const [intensityHistory, setIntensityHistory] = useState(crisis.intensityHistory)
   const [notes, setNotes] = useState(crisis.notes)
   const [addingTreatment, setAddingTreatment] = useState(false)
+  const [addingSymptom, setAddingSymptom] = useState(false)
+  const [newSymptomLabel, setNewSymptomLabel] = useState('')
+  const [addingTrigger, setAddingTrigger] = useState(false)
+  const [newTriggerLabel, setNewTriggerLabel] = useState('')
   const [elapsed, setElapsed] = useState(0)
 
   const isOngoing = !crisis.end
@@ -59,6 +63,26 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, o
   const removeTreatment = (i: number) => setTreatments(ts => ts.filter((_, j) => j !== i))
   const setTreatmentEff = (i: number, eff: number) =>
     setTreatments(ts => ts.map((t, j) => j === i ? { ...t, eff } : t))
+
+  const handleAddCustomSymptom = () => {
+    const label = newSymptomLabel.trim()
+    if (!label) return
+    const key = `custom_s_${Date.now()}`
+    saveCustomSymptom({ key, label })
+    setSymptoms(s => [...s, key])
+    setNewSymptomLabel('')
+    setAddingSymptom(false)
+  }
+
+  const handleAddCustomTrigger = () => {
+    const label = newTriggerLabel.trim()
+    if (!label) return
+    const key = `custom_t_${Date.now()}`
+    saveCustomTrigger({ key, label })
+    setTriggers(t => [...t, key])
+    setNewTriggerLabel('')
+    setAddingTrigger(false)
+  }
 
   const dur = crisis.end ? Math.round((crisis.end.getTime() - crisis.start.getTime()) / 60000) : null
   const c = intensityColor(intensity)
@@ -157,24 +181,66 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, o
 
       {/* Symptoms */}
       <Card pad={18} style={{ marginBottom: 16 }}>
-        <Eyebrow style={{ marginBottom: 13 }}>Symptômes</Eyebrow>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
+          <Eyebrow>Symptômes</Eyebrow>
+          {!addingSymptom && (
+            <button onClick={() => setAddingSymptom(true)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'transparent', border: `1.5px solid ${A}55`, borderRadius: 8, padding: '4px 10px', cursor: 'pointer', color: A, fontSize: 12.5, fontWeight: 700, fontFamily: 'inherit' }}>
+              <Icon name="plus" size={13} color={A} stroke={2.5} />Ajouter
+            </button>
+          )}
+        </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {allSymptomKeys.map(k => (
             <Chip key={k} label={allSymptoms[k]} selected={symptoms.includes(k)}
               onClick={() => toggle(symptoms, setSymptoms, k)} />
           ))}
         </div>
+        {addingSymptom && (
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <input
+              autoFocus
+              value={newSymptomLabel}
+              onChange={e => setNewSymptomLabel(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddCustomSymptom()}
+              placeholder="Nouveau symptôme…"
+              style={{ flex: 1, padding: '7px 12px', borderRadius: 10, border: `1.5px solid ${A}66`, background: T.surface, color: T.onSurface, fontSize: 14, fontFamily: 'inherit', outline: 'none' }}
+            />
+            <button onClick={handleAddCustomSymptom} style={{ padding: '7px 13px', borderRadius: 10, background: A, color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>OK</button>
+            <button onClick={() => { setAddingSymptom(false); setNewSymptomLabel('') }} style={{ padding: '7px 10px', borderRadius: 10, background: 'transparent', color: T.onSurfaceVariant, border: `1.5px solid ${T.outline}`, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer' }}>✕</button>
+          </div>
+        )}
       </Card>
 
       {/* Triggers */}
       <Card pad={18} style={{ marginBottom: 16 }}>
-        <Eyebrow style={{ marginBottom: 13 }}>Déclencheurs possibles</Eyebrow>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
+          <Eyebrow>Déclencheurs possibles</Eyebrow>
+          {!addingTrigger && (
+            <button onClick={() => setAddingTrigger(true)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'transparent', border: `1.5px solid ${A}55`, borderRadius: 8, padding: '4px 10px', cursor: 'pointer', color: A, fontSize: 12.5, fontWeight: 700, fontFamily: 'inherit' }}>
+              <Icon name="plus" size={13} color={A} stroke={2.5} />Ajouter
+            </button>
+          )}
+        </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {allTriggerKeys.map(k => (
             <Chip key={k} label={allTriggers[k]} selected={triggers.includes(k)}
               onClick={() => toggle(triggers, setTriggers, k)} />
           ))}
         </div>
+        {addingTrigger && (
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <input
+              autoFocus
+              value={newTriggerLabel}
+              onChange={e => setNewTriggerLabel(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddCustomTrigger()}
+              placeholder="Nouveau déclencheur…"
+              style={{ flex: 1, padding: '7px 12px', borderRadius: 10, border: `1.5px solid ${A}66`, background: T.surface, color: T.onSurface, fontSize: 14, fontFamily: 'inherit', outline: 'none' }}
+            />
+            <button onClick={handleAddCustomTrigger} style={{ padding: '7px 13px', borderRadius: 10, background: A, color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>OK</button>
+            <button onClick={() => { setAddingTrigger(false); setNewTriggerLabel('') }} style={{ padding: '7px 10px', borderRadius: 10, background: 'transparent', color: T.onSurfaceVariant, border: `1.5px solid ${T.outline}`, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer' }}>✕</button>
+          </div>
+        )}
       </Card>
 
       {/* Treatments */}
