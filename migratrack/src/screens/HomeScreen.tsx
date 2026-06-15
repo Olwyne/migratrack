@@ -1,4 +1,5 @@
 import { useTheme } from '../hooks/useTheme'
+import { usePrefs } from '../store/prefs'
 import { useCrisis } from '../store/crisis'
 import { MigraineCrisis, TreatmentLog, TRIGGERS } from '../data/types'
 import { computeStats } from '../data/stats'
@@ -19,6 +20,7 @@ interface Props {
 
 export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats, onSettings }: Props) {
   const { T, A, dark } = useTheme()
+  const { showSteps, showHydration } = usePrefs()
   const { crises, ongoing, logs, markLog, schedules } = useCrisis()
   const now = new Date()
   const stats = computeStats(crises, now)
@@ -126,12 +128,14 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats, on
       </Card>
 
       {/* Goals */}
-      <Card style={{ marginTop: 12 }} pad={16}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, letterSpacing: 0.2, marginBottom: 14 }}>OBJECTIFS DU JOUR</div>
-        <GoalRow icon="steps" label="Pas" cur={SAMPLE_GOALS.stepsToday} target={SAMPLE_GOALS.stepsTarget} fmt={v => v.toLocaleString('fr-FR')} color="#7AA88A" />
-        <div style={{ height: 14 }} />
-        <GoalRow icon="drop" label="Hydratation" cur={SAMPLE_GOALS.waterToday} target={SAMPLE_GOALS.waterTarget} fmt={v => `${v.toFixed(1)} L`} color="#6E9BC4" />
-      </Card>
+      {(showSteps || showHydration) && (
+        <Card style={{ marginTop: 12 }} pad={16}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, letterSpacing: 0.2, marginBottom: 14 }}>OBJECTIFS DU JOUR</div>
+          {showSteps && <GoalRow icon="steps" label="Pas" cur={SAMPLE_GOALS.stepsToday} target={SAMPLE_GOALS.stepsTarget} fmt={v => v.toLocaleString('fr-FR')} color="#7AA88A" />}
+          {showSteps && showHydration && <div style={{ height: 14 }} />}
+          {showHydration && <GoalRow icon="drop" label="Hydratation" cur={SAMPLE_GOALS.waterToday} target={SAMPLE_GOALS.waterTarget} fmt={v => `${v.toFixed(1)} L`} color="#6E9BC4" />}
+        </Card>
+      )}
 
       {/* Today treatments */}
       {todayTreatments.length > 0 && (

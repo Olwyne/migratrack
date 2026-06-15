@@ -187,7 +187,7 @@ function ScheduleForm({ initial, onSave, onCancel }: {
 
 function ApparencePage({ onBack }: { onBack: () => void }) {
   const { T, A } = useTheme()
-  const { dark, accent, density, fontScale, setDark, setAccent, setDensity, setFontScale } = usePrefs()
+  const { dark, accent, density, fontScale, showSteps, showHydration, setDark, setAccent, setDensity, setFontScale, setShowSteps, setShowHydration } = usePrefs()
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 40 }}>
@@ -225,6 +225,12 @@ function ApparencePage({ onBack }: { onBack: () => void }) {
           <input type="range" min={0.9} max={1.15} step={0.05} value={fontScale}
             onChange={e => setFontScale(Number(e.target.value))}
             style={{ width: 100, accentColor: A }} />
+        </SettingRow>
+        <SettingRow label="Afficher les pas" icon="steps">
+          <Toggle value={showSteps} onChange={setShowSteps} />
+        </SettingRow>
+        <SettingRow label="Afficher l'hydratation" icon="drop">
+          <Toggle value={showHydration} onChange={setShowHydration} />
         </SettingRow>
       </Card>
     </div>
