@@ -52,8 +52,8 @@ export function HomeScreen({ onStartCrisis, onEndCrisis, openCrisis, goStats }: 
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, overflow: 'hidden', background: '#fff', boxShadow: '0 1px 3px rgba(28,27,34,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img src="/logo.png" alt="MigraTrack" style={{ width: '128%', height: '128%', objectFit: 'cover' }} />
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#fff', boxShadow: '0 1px 3px rgba(28,27,34,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+            <img src="/logo.png" alt="MigraTrack" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 10 }} />
           </div>
           <div>
             <div style={{ fontSize: 19, fontWeight: 800, color: T.onSurface, letterSpacing: -0.3, lineHeight: 1 }}>MigraTrack</div>
