@@ -150,7 +150,7 @@ function AppInner() {
                 isNew={overlay.isNew}
                 onClose={closeTop}
                 onSave={(c) => handleSaveCrisis(c, overlay.isNew)}
-                onUpdate={handleUpdateCrisis}
+                onUpdate={overlay.isNew ? undefined : handleUpdateCrisis}
                 onDelete={!overlay.isNew ? handleDeleteCrisis : undefined}
               />
             )}
