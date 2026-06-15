@@ -14,7 +14,7 @@ export interface MigraineCrisis {
   start: Date
   end: Date | null
   intensity: number
-  location: string | null
+  locations: string[]
   symptoms: string[]
   triggers: string[]
   treatments: TreatmentEntry[]
@@ -79,6 +79,6 @@ export const SYMPTOM_KEYS = Object.keys(SYMPTOMS)
 export const TRIGGER_KEYS = Object.keys(TRIGGERS)
 
 export const LOCATIONS = [
-  'Tempe droite', 'Tempe gauche', 'Front',
-  'Œil gauche', 'Nuque', 'Crâne entier',
+  'Vertex', 'Front', 'Tempe droite', 'Tempe gauche',
+  'Œil droit', 'Œil gauche', 'Nuque', 'Crâne entier',
 ]

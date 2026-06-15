@@ -45,7 +45,10 @@ export function computeStats(list: MigraineCrisis[], now = new Date()): CrisisSt
   done.forEach(c => { if (c.intensity) bands[intensityBand(c.intensity)]++ })
 
   const locCount: Record<string, number> = {}
-  done.forEach(c => { if (c.location) locCount[c.location] = (locCount[c.location] || 0) + 1 })
+  done.forEach(c => {
+    const locs = (c as any).locations ?? ((c as any).location ? [(c as any).location] : [])
+    locs.forEach((l: string) => { locCount[l] = (locCount[l] || 0) + 1 })
+  })
   const locations = Object.entries(locCount).map(([k,v]) => ({ key: k, count: v })).sort((a,b) => b.count - a.count)
 
   const txMap: Record<string, { sum: number; n: number }> = {}

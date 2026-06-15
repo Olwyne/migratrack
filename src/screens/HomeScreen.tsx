@@ -204,7 +204,7 @@ function OngoingCard({ ongoing, onEnd, openCrisis }: { ongoing: MigraineCrisis; 
         <span style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: T.onSurfaceVariant }}>depuis {fmtDur(mins)}</span>
       </div>
       <div style={{ fontSize: 13, color: T.onSurfaceVariant, margin: '8px 0 16px' }}>
-        Intensité actuelle {ongoing.intensity}/10 · {ongoing.location}
+        Intensité actuelle {ongoing.intensity}/10{ongoing.locations?.length ? ` · ${ongoing.locations.join(', ')}` : ''}
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
         <TonalButton icon="check" onClick={onEnd}>Terminer la crise</TonalButton>
@@ -256,7 +256,7 @@ export function CrisisRow({ crisis, onClick }: { crisis: MigraineCrisis; onClick
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: T.onSurface }}>{capitalize(relDate(crisis.start))}</div>
           <div style={{ fontSize: 12.5, color: T.onSurfaceVariant, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {crisis.location}{dur != null ? ` · ${fmtDur(dur)}` : ''}{crisis.triggers.length ? ` · ${TRIGGERS[crisis.triggers[0]]}` : ''}
+            {crisis.locations?.[0]}{dur != null ? ` · ${fmtDur(dur)}` : ''}{crisis.triggers.length ? ` · ${TRIGGERS[crisis.triggers[0]]}` : ''}
           </div>
         </div>
         <Icon name="chevronR" size={18} color={T.onSurfaceVariant} stroke={2} />

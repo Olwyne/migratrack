@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTheme } from '../hooks/useTheme'
-import { MigraineCrisis, TreatmentEntry, SYMPTOM_KEYS, TRIGGER_KEYS, SYMPTOMS, TRIGGERS, LOCATIONS } from '../data/types'
+import { MigraineCrisis, TreatmentEntry, SYMPTOM_KEYS, TRIGGER_KEYS, SYMPTOMS, TRIGGERS } from '../data/types'
+import { HeadDiagram } from '../components/ui/HeadDiagram'
 import { useCrisis } from '../store/crisis'
 import { Card } from '../components/ui/Card'
 import { Icon } from '../components/ui/Icon'
@@ -25,7 +26,9 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, o
   const { customSymptoms, customTriggers, schedules } = useCrisis()
 
   const [intensity, setIntensity] = useState(crisis.intensity || 5)
-  const [location, setLocation] = useState<string | null>(crisis.location)
+  const [locations, setLocations] = useState<string[]>(
+    (crisis as any).locations ?? ((crisis as any).location ? [(crisis as any).location] : [])
+  )
   const [symptoms, setSymptoms] = useState<string[]>(crisis.symptoms)
   const [triggers, setTriggers] = useState<string[]>(crisis.triggers)
   const [treatments, setTreatments] = useState<TreatmentEntry[]>(crisis.treatments)
@@ -60,7 +63,7 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, o
   const dur = crisis.end ? Math.round((crisis.end.getTime() - crisis.start.getTime()) / 60000) : null
   const c = intensityColor(intensity)
 
-  const buildCrisis = () => ({ ...crisis, intensity, location, symptoms, triggers, treatments, intensityHistory, notes })
+  const buildCrisis = () => ({ ...crisis, intensity, locations, symptoms, triggers, treatments, intensityHistory, notes })
 
   const handleSave = () => onSave(buildCrisis())
 
@@ -148,10 +151,8 @@ export function CrisisDetailScreen({ crisis, isNew, onClose, onSave, onUpdate, o
 
       {/* Location */}
       <Card pad={18} style={{ marginBottom: 16 }}>
-        <Eyebrow style={{ marginBottom: 13 }}>Localisation</Eyebrow>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {LOCATIONS.map(l => <Chip key={l} label={l} selected={location === l} onClick={() => setLocation(location === l ? null : l)} />)}
-        </div>
+        <Eyebrow style={{ marginBottom: 12 }}>Localisation</Eyebrow>
+        <HeadDiagram selected={locations} onChange={setLocations} />
       </Card>
 
       {/* Symptoms */}

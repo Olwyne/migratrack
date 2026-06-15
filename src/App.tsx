@@ -24,7 +24,7 @@ function newCrisis(): MigraineCrisis {
   const now = new Date()
   return {
     id: `c_${Date.now()}`,
-    start: now, end: null, intensity: 5, location: null,
+    start: now, end: null, intensity: 5, locations: [],
     symptoms: [], triggers: [], treatments: [],
     intensityHistory: [{ t: now, v: 5 }],
     notes: '', weatherPressure: null, weatherDescription: null,
