@@ -18,16 +18,16 @@ interface Zone {
   side?: 'left' | 'right' // if absent = no half-clip
 }
 
-// Front view — symmetric zones split L/R, lateral zones kept whole
+// Front view — anatomical convention (face facing viewer: patient's droite on viewer's left)
 const FRONT_ZONES: Zone[] = [
-  { id: 'Vertex gauche',  short: 'Vertex G', lx: 72,  ly: 26,  shape: 'ellipse', sp: { cx: 100, cy: 24, rx: 52, ry: 20 }, side: 'left' },
-  { id: 'Vertex droit',   short: 'Vertex D', lx: 128, ly: 26,  shape: 'ellipse', sp: { cx: 100, cy: 24, rx: 52, ry: 20 }, side: 'right' },
-  { id: 'Front gauche',   short: 'Front G',  lx: 74,  ly: 62,  shape: 'rect',    sp: { x: 44, y: 42, width: 112, height: 40 }, side: 'left' },
-  { id: 'Front droit',    short: 'Front D',  lx: 126, ly: 62,  shape: 'rect',    sp: { x: 44, y: 42, width: 112, height: 40 }, side: 'right' },
-  { id: 'Tempe gauche',   short: 'Tempe G',  lx: 36,  ly: 82,  shape: 'rect',    sp: { x: 17, y: 46, width: 40, height: 72 } },
-  { id: 'Tempe droite',   short: 'Tempe D',  lx: 164, ly: 82,  shape: 'rect',    sp: { x: 143, y: 46, width: 40, height: 72 } },
-  { id: 'Œil gauche',    short: 'Œil G',    lx: 78,  ly: 120, shape: 'ellipse', sp: { cx: 78, cy: 112, rx: 22, ry: 14 } },
-  { id: 'Œil droit',     short: 'Œil D',    lx: 122, ly: 120, shape: 'ellipse', sp: { cx: 122, cy: 112, rx: 22, ry: 14 } },
+  { id: 'Vertex droit',   short: 'Vertex D', lx: 72,  ly: 26,  shape: 'ellipse', sp: { cx: 100, cy: 24, rx: 52, ry: 20 }, side: 'left' },
+  { id: 'Vertex gauche',  short: 'Vertex G', lx: 128, ly: 26,  shape: 'ellipse', sp: { cx: 100, cy: 24, rx: 52, ry: 20 }, side: 'right' },
+  { id: 'Front droit',    short: 'Front D',  lx: 74,  ly: 62,  shape: 'rect',    sp: { x: 44, y: 42, width: 112, height: 40 }, side: 'left' },
+  { id: 'Front gauche',   short: 'Front G',  lx: 126, ly: 62,  shape: 'rect',    sp: { x: 44, y: 42, width: 112, height: 40 }, side: 'right' },
+  { id: 'Tempe droite',   short: 'Tempe D',  lx: 36,  ly: 82,  shape: 'rect',    sp: { x: 17, y: 46, width: 40, height: 72 } },
+  { id: 'Tempe gauche',   short: 'Tempe G',  lx: 164, ly: 82,  shape: 'rect',    sp: { x: 143, y: 46, width: 40, height: 72 } },
+  { id: 'Œil droit',     short: 'Œil D',    lx: 78,  ly: 120, shape: 'ellipse', sp: { cx: 78, cy: 112, rx: 22, ry: 14 } },
+  { id: 'Œil gauche',    short: 'Œil G',    lx: 122, ly: 120, shape: 'ellipse', sp: { cx: 122, cy: 112, rx: 22, ry: 14 } },
 ]
 
 // Back view — symmetric zones split L/R
@@ -166,9 +166,8 @@ export function HeadDiagram({ selected, onChange }: Props) {
         </div>
       </div>
 
-      {/* G = gauche (viewer's left), D = droite (viewer's right) */}
       <p style={{ textAlign: 'center', fontSize: 10, color: T.onSurfaceVariant, margin: '6px 0 0', opacity: 0.6 }}>
-        G = gauche · D = droite (de votre point de vue)
+        Vue de face — comme si vous regardiez quelqu'un
       </p>
 
       {/* Crâne entier chip */}
