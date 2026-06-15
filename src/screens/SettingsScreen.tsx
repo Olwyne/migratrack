@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { requestNotificationPermission, notificationsGranted } from '../utils/notifications'
 import { useTheme } from '../hooks/useTheme'
 import { usePrefs } from '../store/prefs'
 import { useAuth } from '../store/auth'
@@ -272,6 +273,7 @@ function ComptePage({ onBack, onClose }: { onBack: () => void; onClose: () => vo
   const { T, A } = useTheme()
   const { user, signOut } = useAuth()
   const { crises } = useCrisis()
+  const [notifGranted, setNotifGranted] = useState(notificationsGranted())
 
   const handleExport = () => {
     const json = JSON.stringify(crises, null, 2)
@@ -306,6 +308,25 @@ function ComptePage({ onBack, onClose }: { onBack: () => void; onClose: () => vo
         ) : (
           <SettingRow label="Non connecté" icon="user">
             <span style={{ fontSize: 12, color: T.onSurfaceVariant }}>Mode local</span>
+          </SettingRow>
+        )}
+      </Card>
+
+      <Card pad={0} style={{ marginBottom: 20 }}>
+        <SettingRow label="Notifications" icon="bell">
+          {notifGranted ? (
+            <span style={{ fontSize: 12, color: '#4CAF50', fontWeight: 600 }}>Activées</span>
+          ) : (
+            <button onClick={() => requestNotificationPermission().then(ok => setNotifGranted(ok))} style={{
+              padding: '6px 14px', borderRadius: 10, border: `1.5px solid ${A}66`,
+              background: 'transparent', color: A, cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 13, fontWeight: 650,
+            }}>Activer</button>
+          )}
+        </SettingRow>
+        {notifGranted && (
+          <SettingRow label="Rappel crise (toutes les heures)" icon="clock">
+            <span style={{ fontSize: 12, color: T.onSurfaceVariant }}>Auto</span>
           </SettingRow>
         )}
       </Card>

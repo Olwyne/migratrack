@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ThemeProvider } from './components/layout/ThemeProvider'
 import { AppShell } from './components/layout/AppShell'
 import { HomeScreen } from './screens/HomeScreen'
@@ -15,6 +15,7 @@ import { useCrisis } from './store/crisis'
 import { MigraineCrisis } from './data/types'
 import { supabase } from './data/supabase'
 import { useTheme } from './hooks/useTheme'
+import { requestNotificationPermission, startCrisisReminders, stopCrisisReminders, scheduleTreatmentReminders } from './utils/notifications'
 
 type Tab = 'home' | 'history' | 'stats'
 type OverlayType = { type: 'detail'; crisis: MigraineCrisis; isNew: boolean } | { type: 'settings' } | { type: 'report' }
@@ -39,6 +40,7 @@ function AppInner() {
   const [tab, setTab] = useState<Tab>('home')
   const [stack, setStack] = useState<OverlayType[]>([])
   const [guestMode, setGuestMode] = useState(false)
+  const ongoingRef = useRef(useCrisis.getState().ongoing)
 
   useEffect(() => {
     if (session?.user) {
@@ -46,6 +48,32 @@ function AppInner() {
       pullFromSupabase(session.user.id)
     }
   }, [session?.user?.id])
+
+  // Request notification permission + schedule treatment reminders on mount
+  useEffect(() => {
+    requestNotificationPermission().then(granted => {
+      if (granted) scheduleTreatmentReminders(useCrisis.getState().schedules)
+    })
+  }, [])
+
+  // Watch ongoing crisis → start/stop hourly reminders
+  useEffect(() => {
+    return useCrisis.subscribe(state => {
+      const prev = ongoingRef.current
+      ongoingRef.current = state.ongoing
+      if (!prev && state.ongoing) startCrisisReminders()
+      else if (prev && !state.ongoing) stopCrisisReminders()
+    })
+  }, [])
+
+  // Re-schedule treatment reminders when schedules change
+  useEffect(() => {
+    return useCrisis.subscribe(state => {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        scheduleTreatmentReminders(state.schedules)
+      }
+    })
+  }, [])
 
   useEffect(() => {
     const onHash = () => { if (window.location.hash === '#guest') setGuestMode(true) }
