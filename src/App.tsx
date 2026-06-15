@@ -100,7 +100,7 @@ function AppInner() {
   }
 
   return (
-    <AppShell tab={tab} onTabChange={t => setTab(t as Tab)} onFAB={startCrisis} showFAB={showFAB}>
+    <AppShell tab={tab} onTabChange={t => { if (overlay?.type === 'settings') setStack([]); setTab(t as Tab) }} onFAB={startCrisis} showFAB={showFAB}>
       {tab === 'home' && <HomeScreen onStartCrisis={startCrisis} onEndCrisis={endOngoing} openCrisis={openCrisis} goStats={() => setTab('stats')} onSettings={() => setStack(s => [...s, { type: 'settings' }])} />}
       {tab === 'history' && <HistoryScreen openCrisis={openCrisis} />}
       {tab === 'stats' && <StatsScreen goReport={() => setTab('report')} />}

@@ -45,7 +45,7 @@ export function AppShell({ tab, onTabChange, onFAB, showFAB, children }: Props) 
         background: T.navBg, backdropFilter: 'blur(20px) saturate(160%)',
         borderTop: `1px solid ${T.cardBorder}`,
         paddingBottom: 'env(safe-area-inset-bottom, 8px)',
-        display: 'flex', alignItems: 'stretch', zIndex: 30,
+        display: 'flex', alignItems: 'stretch', zIndex: 50,
       }}>
         {NAV.map(n => {
           const active = tab === n.id
@@ -66,7 +66,7 @@ export function AppShell({ tab, onTabChange, onFAB, showFAB, children }: Props) 
       {showFAB && (
         <button onClick={onFAB} aria-label="Enregistrer une crise" style={{
           position: 'absolute', right: 18, bottom: 84, width: 58, height: 58, borderRadius: 19,
-          border: 'none', background: A, color: '#fff', cursor: 'pointer', zIndex: 31,
+          border: 'none', background: A, color: '#fff', cursor: 'pointer', zIndex: 51,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: `0 8px 22px ${A}55`,
         }}>
