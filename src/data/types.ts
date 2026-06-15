@@ -80,5 +80,5 @@ export const TRIGGER_KEYS = Object.keys(TRIGGERS)
 
 export const LOCATIONS = [
   'Vertex', 'Front', 'Tempe droite', 'Tempe gauche',
-  'Œil droit', 'Œil gauche', 'Nuque', 'Crâne entier',
+  'Œil droit', 'Œil gauche', 'Occiput', 'Nuque', 'Crâne entier',
 ]
