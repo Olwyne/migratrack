@@ -49,6 +49,19 @@ function AppInner() {
     }
   }, [session?.user?.id])
 
+  // Re-pull from Supabase when tab regains focus
+  useEffect(() => {
+    if (!session?.user) return
+    const userId = session.user.id
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        useCrisis.getState().pullFromSupabase(userId)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [session?.user?.id])
+
   // Request notification permission + schedule treatment reminders on mount
   useEffect(() => {
     requestNotificationPermission().then(granted => {

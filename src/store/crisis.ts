@@ -73,14 +73,14 @@ export const useCrisis = create<CrisisState>()(
           pullSchedules(userId),
           pullUserLists(userId),
         ])
-        if (remote.length > 0) {
-          set({ crises: remote, usingSampleData: false })
-        } else {
-          set({ crises: [], usingSampleData: false })
-        }
-        if (remoteSchedules.length > 0) set({ schedules: remoteSchedules })
-        if (userLists.symptoms.length > 0) set({ customSymptoms: userLists.symptoms })
-        if (userLists.triggers.length > 0) set({ customTriggers: userLists.triggers })
+        // Supabase is source of truth when connected — always replace local state
+        set({
+          crises: remote,
+          usingSampleData: false,
+          schedules: remoteSchedules,
+          customSymptoms: userLists.symptoms,
+          customTriggers: userLists.triggers,
+        })
       },
 
       saveSchedule: (s, userId) => {
