@@ -41,7 +41,7 @@ export function ReportScreen({ goBack }: Props) {
         c.end ? hhmm(c.end!) : '',
         c.end ? Math.round((c.end!.getTime() - c.start.getTime()) / 60000).toString() : '',
         c.intensity.toString(),
-        c.location || '',
+        c.locations?.join(', ') ?? '',
         c.triggers.map(t => TRIGGERS[t] || t).join('; '),
         c.symptoms.map(s => SYMPTOMS[s] || s).join('; '),
         c.treatments.map(t => t.name).join('; '),
@@ -137,7 +137,7 @@ export function ReportScreen({ goBack }: Props) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 650, color: T.onSurface }}>{c.start.getDate()} {MONTHS_FR[c.start.getMonth()].slice(0,4)}. · {hhmm(c.start)}</div>
               <div style={{ fontSize: 11.5, color: T.onSurfaceVariant, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {c.location} · {fmtDur(Math.round((c.end!.getTime() - c.start.getTime()) / 60000))}
+                {c.locations?.join(', ') ?? ''} · {fmtDur(Math.round((c.end!.getTime() - c.start.getTime()) / 60000))}
                 {c.symptoms.length ? ` · ${c.symptoms.map(s => SYMPTOMS[s]).slice(0,2).join(', ')}` : ''}
               </div>
             </div>

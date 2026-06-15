@@ -19,7 +19,7 @@ const uid = () => `sample_c${++_id}`
 export const SAMPLE_CRISES: MigraineCrisis[] = [
   {
     id: uid(), start: d(2,14,30), end: d(2,18,10), intensity: 7,
-    location: 'Tempe droite',
+    locations: ['Tempe droite'],
     symptoms: ['symptom_light_sensitivity','symptom_nausea','symptom_aura'],
     triggers: ['trigger_stress','trigger_screen'],
     treatments: [tx('Sumatriptan',4,d(2),15,5), tx('Ibuprofène',3,d(2),14,50)],
@@ -32,7 +32,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(5,8,15), end: d(5,10,0), intensity: 4,
-    location: 'Front',
+    locations: ['Front'],
     symptoms: ['symptom_sound_sensitivity'],
     triggers: ['trigger_sleep'],
     treatments: [tx('Paracétamol',3,d(5),8,30)],
@@ -42,7 +42,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(9,19,40), end: d(9,23,30), intensity: 9,
-    location: 'Œil gauche',
+    locations: ['Œil gauche'],
     symptoms: ['symptom_light_sensitivity','symptom_nausea','symptom_vomiting','symptom_aura'],
     triggers: ['trigger_stress','trigger_menstruation','trigger_food'],
     treatments: [tx('Sumatriptan',5,d(9),20,10), tx('Métoclopramide',4,d(9),20,15)],
@@ -55,7 +55,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(13,11,0), end: d(13,13,20), intensity: 5,
-    location: 'Tempe gauche',
+    locations: ['Tempe gauche'],
     symptoms: ['symptom_dizziness','symptom_light_sensitivity'],
     triggers: ['trigger_dehydration','trigger_weather'],
     treatments: [tx('Ibuprofène',4,d(13),11,20)],
@@ -64,7 +64,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(16,7,50), end: d(16,9,5), intensity: 3,
-    location: 'Nuque',
+    locations: ['Nuque'],
     symptoms: ['symptom_sound_sensitivity'],
     triggers: ['trigger_sleep','trigger_screen'],
     treatments: [tx('Paracétamol',3,d(16),8,0)],
@@ -73,7 +73,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(20,16,30), end: d(20,20,0), intensity: 8,
-    location: 'Tempe droite',
+    locations: ['Tempe droite'],
     symptoms: ['symptom_light_sensitivity','symptom_nausea','symptom_aura'],
     triggers: ['trigger_stress','trigger_alcohol'],
     treatments: [tx('Sumatriptan',4,d(20),17,0)],
@@ -86,7 +86,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(24,13,10), end: d(24,15,0), intensity: 5,
-    location: 'Front',
+    locations: ['Front'],
     symptoms: ['symptom_light_sensitivity'],
     triggers: ['trigger_food','trigger_stress'],
     treatments: [tx('Ibuprofène',3,d(24),13,25)],
@@ -95,7 +95,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(28,9,30), end: d(28,12,45), intensity: 6,
-    location: 'Œil gauche',
+    locations: ['Œil gauche'],
     symptoms: ['symptom_nausea','symptom_dizziness'],
     triggers: ['trigger_menstruation','trigger_weather'],
     treatments: [tx('Sumatriptan',4,d(28),10,0), tx('Paracétamol',2,d(28),9,45)],
@@ -104,7 +104,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(34,20,0), end: d(34,22,15), intensity: 4,
-    location: 'Tempe gauche',
+    locations: ['Tempe gauche'],
     symptoms: ['symptom_sound_sensitivity','symptom_light_sensitivity'],
     triggers: ['trigger_screen'],
     treatments: [tx('Paracétamol',3,d(34),20,20)],
@@ -113,7 +113,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
   },
   {
     id: uid(), start: d(41,10,15), end: d(41,14,0), intensity: 7,
-    location: 'Tempe droite',
+    locations: ['Tempe droite'],
     symptoms: ['symptom_light_sensitivity','symptom_nausea'],
     triggers: ['trigger_stress','trigger_sleep'],
     treatments: [tx('Sumatriptan',5,d(41),10,45)],
@@ -124,7 +124,7 @@ export const SAMPLE_CRISES: MigraineCrisis[] = [
 
 export const SAMPLE_ONGOING: MigraineCrisis = {
   id: 'ongoing', start: d(0,15,5), end: null, intensity: 6,
-  location: 'Tempe droite',
+  locations: ['Tempe droite'],
   symptoms: ['symptom_light_sensitivity'],
   triggers: ['trigger_stress'],
   treatments: [tx('Ibuprofène',3,d(0),15,20)],
