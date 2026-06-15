@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+*.local
+.DS_Store
+migratrack/.dart_tool/
+migratrack/node_modules/
+migratrack/dist/
+migratrack/.env
