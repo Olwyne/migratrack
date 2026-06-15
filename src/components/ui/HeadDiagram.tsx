@@ -166,8 +166,8 @@ export function HeadDiagram({ selected, onChange }: Props) {
         </div>
       </div>
 
-      <p style={{ textAlign: 'center', fontSize: 10, color: T.onSurfaceVariant, margin: '6px 0 0', opacity: 0.6 }}>
-        Vue de face — comme si vous regardiez quelqu'un
+      <p style={{ textAlign: 'center', fontSize: 10, color: T.onSurfaceVariant, margin: '4px 0 0', opacity: 0.7 }}>
+        G = votre gauche &nbsp;·&nbsp; D = votre droite
       </p>
 
       {/* Crâne entier chip */}
